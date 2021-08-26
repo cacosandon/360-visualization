@@ -9,7 +9,7 @@ For local forwarding on remote server use
 
 If you are connection to IA LAB Cluster, use:
 
-`sbatch /home/jiossandon/repos/360-visualization/jupyter.sh`
+`sbatch /home/jiossandon/repos/360-visualization/jupyter_on_slurm.sh`
 
 and cancel after not use
 
