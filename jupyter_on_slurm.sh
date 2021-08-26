@@ -4,6 +4,7 @@
 #SBATCH --output=slurm/jupyter.log    # Nombre del output (%j se reemplaza por el ID del trabajo)
 #SBATCH --error=slurm/jupyter.log     # Output de errores (opcional)
 #SBATCH --partition=all
+#SBATCH --nodelist=scylla
 #SBATCH --workdir=/home/jiossandon   # Direccion donde correr el trabajo
 
 pwd; hostname; date
