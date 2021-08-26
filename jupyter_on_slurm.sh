@@ -9,6 +9,6 @@
 
 pwd; hostname; date
 
-source /home/jiossandon/repos/360-visualization/virtualenv/r2r/bin/activate
+source /home/jiossandon/repos/360-visualization/r2r/bin/activate
 
 jupyter notebook --no-browser --port=9995 --ip="0.0.0.0" && jupyter notebook --no-browser --port=9995
