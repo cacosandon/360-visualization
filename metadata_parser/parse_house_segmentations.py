@@ -1,7 +1,7 @@
-from os import lseek
 from typing import Tuple, TypeVar
 import pandas as pd
 import re
+import os
 from tqdm import tqdm
 import pickle
 
@@ -56,8 +56,11 @@ T = TypeVar('T', bound='HouseSegmentationFile')
 
 
 class HouseSegmentationFile:
-    def __init__(self, path) -> None:
-        self.__file_path = path
+    base_path = '/home/mrearle/datasets/Matterport3DSimulator/houses/v1/scans'
+    def __init__(self, house_id: str) -> None:
+        self.house_id = house_id
+        self.__file_path = f'{self.base_path}/{house_id}/{house_id}/house_segmentations/{house_id}.house'
+        self.__cache_path = f'./metadata_parser/house_cache/{house_id}.pickle'
         self.header = None
         self.levels = pd.DataFrame(columns=[
             'index', 'num_regions', 'label',
@@ -90,7 +93,7 @@ class HouseSegmentationFile:
             'segment_index', 'object_index', 'id', 'area', 'px', 'py', 'pz', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi',
         ])
 
-    def parse_file(self):
+    def __parse_file(self):
         with open(self.__file_path) as ar:
             lines = ar.readlines()
             for line in tqdm(lines):
@@ -232,14 +235,27 @@ class HouseSegmentationFile:
                 else:
                     print('Missing category:', category)
 
-    def save_mapping(self, path: str):
+    def save_mapping(self, path: str = None):
+        if path is None:
+            path = self.__cache_path
+
         with open(path, 'wb') as ar:
             pickle.dump(self, ar)
 
     @classmethod
-    def load_mapping(self, path: str) -> T:
-        with open(path, 'rb') as ar:
-            return pickle.load(ar)
+    def load_mapping(cls, house_id: str) -> T:
+        cache_path = f'./metadata_parser/house_cache/{house_id}.pickle'
+        if os.path.isfile(cache_path):
+            print('Cached file exists, loading.')
+            with open(cache_path, 'rb') as ar:
+                return pickle.load(ar)
+        
+        print('No cache found. Generating from data')
+        metadata = cls(house_id)
+        metadata.__parse_file()
+        print('Caching data')
+        metadata.save_mapping(cache_path)
+        return metadata
 
     def viewpoint_objects(self, viewpoint_id: str) -> pd.DataFrame:
         region = self.panoramas.query(f'name == "{viewpoint_id}"')['region_index'].values[0]
@@ -258,11 +274,13 @@ if __name__ == '__main__':
     # metadata.viewpoint_objects('fe0787eb7f0348f0a0b0e84c25833fd7')
 
     import os
-    base_path = '~/datasets/Matterport3DSimulator/houses/v1/scans'
+    base_path = '/home/mrearle/datasets/Matterport3DSimulator/houses/v1/scans'
     file_pattern = base_path + '/{house}/{house}/house_segmentations/{house}.house'
 
     houses = os.listdir(base_path)
 
     for house in houses:
         file_path = file_pattern.format(house=house)
-        print(file_path)
+        print(file_path, os.path.isfile(file_path))
+        metadata = HouseSegmentationFile.load_mapping(house)
+
