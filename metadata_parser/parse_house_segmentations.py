@@ -257,7 +257,6 @@ class HouseSegmentationFile:
             logging.info('Cached file exists, loading.')
             with open(cache_path, 'rb') as ar:
                 return pickle.load(ar)
-
         logging.info('No cache found. Generating from data')
         metadata = cls(house_id)
         metadata.__parse_file()
