@@ -2,8 +2,10 @@ from typing import Tuple, TypeVar
 import pandas as pd
 import re
 import os
-from tqdm import tqdm
 import pickle
+import logging
+
+logging.basicConfig(filename='logs/metadata_parser.log', level=logging.DEBUG)
 
 LINE_PATTERN = r'^([HLRPSVICOE]) *(.*)$'
 EASY_CATEGORY_MAPPING = {
@@ -96,11 +98,16 @@ class HouseSegmentationFile:
     def __parse_file(self):
         with open(self.__file_path) as ar:
             lines = ar.readlines()
-            for line in tqdm(lines):
+            n = len(lines)
+            logging.info(f'{self.house_id}: {n} lines to process')
+            for i, line in enumerate(lines):
+                if i % n // 10 == 0:
+                    logging.info(f'Processing: {i / n:.3f} %')
+
                 category, values = get_line_category(line.strip())
 
                 if category is None:
-                    print('Null line:', line)
+                    logging.info('Null line:', line)
                     continue
 
                 if category == 'header':
@@ -233,7 +240,7 @@ class HouseSegmentationFile:
                         for x, y in zip(cols, values)
                     }, ignore_index=True)
                 else:
-                    print('Missing category:', category)
+                    logging.info('Missing category:', category)
 
     def save_mapping(self, path: str = None):
         if path is None:
@@ -246,14 +253,14 @@ class HouseSegmentationFile:
     def load_mapping(cls, house_id: str) -> T:
         cache_path = f'./metadata_parser/house_cache/{house_id}.pickle'
         if os.path.isfile(cache_path):
-            print('Cached file exists, loading.')
+            logging.info('Cached file exists, loading.')
             with open(cache_path, 'rb') as ar:
                 return pickle.load(ar)
         
-        print('No cache found. Generating from data')
+        logging.info('No cache found. Generating from data')
         metadata = cls(house_id)
         metadata.__parse_file()
-        print('Caching data')
+        logging.info('Finished generating. Caching data')
         metadata.save_mapping(cache_path)
         return metadata
 
@@ -270,17 +277,17 @@ if __name__ == '__main__':
     # metadata.save_mapping('./Z6MFQCViBuw_mapping.pickle')
     # metadata = HouseSegmentationFile.load_mapping('./Z6MFQCViBuw_mapping.pickle')
 
-    # print(metadata.objects.head())
+    # logging.info(metadata.objects.head())
     # metadata.viewpoint_objects('fe0787eb7f0348f0a0b0e84c25833fd7')
 
-    import os
     base_path = '/home/mrearle/datasets/Matterport3DSimulator/houses/v1/scans'
     file_pattern = base_path + '/{house}/{house}/house_segmentations/{house}.house'
 
     houses = os.listdir(base_path)
 
+    logging.info('Parsing files')
     for house in houses:
+        logging.info(f'Parsing {house}')
         file_path = file_pattern.format(house=house)
-        print(file_path, os.path.isfile(file_path))
         metadata = HouseSegmentationFile.load_mapping(house)
 
