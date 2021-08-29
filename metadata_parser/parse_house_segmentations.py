@@ -4,6 +4,7 @@ import re
 import os
 import pickle
 import logging
+import numpy as np
 
 # logging.basicConfig(filename='~/repos/360-visualization/logs/metadata_parser.log', level=logging.DEBUG)
 
@@ -265,9 +266,63 @@ class HouseSegmentationFile:
         return metadata
 
     def viewpoint_objects(self, viewpoint_id: str) -> pd.DataFrame:
-        region = self.panoramas.query(f'name == "{viewpoint_id}"')['region_index'].values[0]
+        """Returns a pandas dataframe with the objects corresponding to a viewpoint.
+        Objects are presented with the same information as the xxx.house file, with the
+        addition of it's category name"""
+        region = self.get_region_index(viewpoint_id)
         objects = self.objects.query(f'region_index == "{region}"')
+        objects = objects.merge(self.categories[['category_index', 'category_mapping_name']], how='inner', on='category_index')
+        objects[['px', 'py', 'pz']] = objects[['px', 'py', 'pz']].apply(pd.to_numeric)
         return objects
+
+    def relative_viewpoint_objects(self, viewpoint_id: str) -> pd.DataFrame:
+        """"Returns a pandas dataframe with the objects corresponding to a viewpoint.
+        Objects are presented with the same information as the xxx.house file, with the
+        addition of it's category name. Also, the object's position (px,py,pz) is measured
+        relative to the position of the viewpoint."""
+        objects = self.viewpoint_objects(viewpoint_id)
+        panorama = self.get_panorama(viewpoint_id).iloc[0]
+
+        objects['px'] = objects['px'] - panorama['px']
+        objects['py'] = objects['py'] - panorama['py']
+        objects['pz'] = objects['pz'] - panorama['pz']
+
+        return objects
+
+    def angle_relative_viewpoint_objects(self, viewpoint_id: str) -> pd.DataFrame:
+        """Returns the same dataframe than `relative_vewpoint_objects`,
+        in addition to the elevation and heading of the object
+        TODO: Make sure calculations are correct
+        """
+        objects = self.relative_viewpoint_objects(viewpoint_id)
+
+        x = objects['px']
+        y = objects['py']
+        z = objects['pz']
+
+        dist = np.sqrt(x ** 2 + y ** 2)
+
+        heading = np.arctan2(x, y)
+        elevation = np.arctan2(z, dist)
+
+        objects['distance'] = dist
+        objects['heading'] = heading
+        objects['elevation'] = elevation
+
+        return objects
+
+    def get_region(self, viewpoint_id: str) -> pd.DataFrame:
+        """"Returns a pandas dataframe corresponding to the viewpoint's region"""
+        region_index = self.get_region_index(viewpoint_id)
+        return self.regions.query(f'region_index == {int(region_index)}')
+
+    def get_region_index(self, viewpoint_id: str) -> int:
+        """Returns the region index asociated to a panorama"""
+        return self.get_panorama(viewpoint_id)['region_index'].values[0]
+
+    def get_panorama(self, viewpoint_id: str) -> pd.DataFrame:
+        """"Returns a pandas dataframe containing the viewpoint's panorama information"""
+        return self.panoramas.query(f'name == "{viewpoint_id}"')
 
 
 if __name__ == '__main__':
@@ -278,4 +333,10 @@ if __name__ == '__main__':
     house_id = 'Z6MFQCViBuw'
     viewpoint_id = 'fe0787eb7f0348f0a0b0e84c25833fd7'
     metadata = HouseSegmentationFile.load_mapping(house_id)
-    print(metadata.viewpoint_objects(viewpoint_id).head())
+    objects = metadata.viewpoint_objects(viewpoint_id)
+    region = metadata.get_region(viewpoint_id)
+    # print(objects.head())
+    # print(region.head())
+
+    o = metadata.angle_relative_viewpoint_objects(viewpoint_id)
+    print(o.head())
