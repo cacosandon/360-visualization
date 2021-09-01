@@ -60,38 +60,39 @@ T = TypeVar('T', bound='HouseSegmentationFile')
 
 class HouseSegmentationFile:
     base_path = '~/datasets/Matterport3DSimulator/houses/v1/scans'
+    base_cache_path = '/home/mrearle/repos/360-visualization/metadata_parser/house_cache'
 
     def __init__(self, house_id: str) -> None:
         self.house_id = house_id
         self.__file_path = f'{self.base_path}/{house_id}/{house_id}/house_segmentations/{house_id}.house'
-        self.__cache_path = f'./metadata_parser/house_cache/{house_id}.pickle'
+        self.__cache_path = f'{self.base_path}/{house_id}.pickle'
         self.header = None
         self.levels = pd.DataFrame(columns=[
             'index', 'num_regions', 'label',
-            'px', 'py', 'pz',  'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi'])
+            'px', 'py', 'pz', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi'])
         self.regions = pd.DataFrame(columns=[
-            'region_index', 'level_index', 'label',  'px', 'py', 'pz', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi', 'height'
+            'region_index', 'level_index', 'label', 'px', 'py', 'pz', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi', 'height'
         ])
         self.portals = pd.DataFrame(columns=[
-            'portal_index', 'region0_index', 'region1_index', 'label',  'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi',
+            'portal_index', 'region0_index', 'region1_index', 'label', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi',
         ])
         self.surfaces = pd.DataFrame(columns=[
-            'surface_index', 'region_index', 'label', 'px', 'py', 'pz',  'nx', 'ny', 'nz',  'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi',
+            'surface_index', 'region_index', 'label', 'px', 'py', 'pz', 'nx', 'ny', 'nz', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi',
         ])
         self.vertex = pd.DataFrame(columns=[
-            'vertex_index', 'surface_index', 'label',  'px', 'py', 'pz',  'nx', 'ny', 'nz',
+            'vertex_index', 'surface_index', 'label', 'px', 'py', 'pz', 'nx', 'ny', 'nz',
         ])
         self.panoramas = pd.DataFrame(columns=[
-            'name',  'panorama_index', 'region_index',  'px', 'py', 'pz',
+            'name', 'panorama_index', 'region_index', 'px', 'py', 'pz',
         ])
         self.images = pd.DataFrame(columns=[
-            'image_index', 'panorama_index',  'name', 'camera_index', 'yaw_index', 'e00', 'e01', 'e02', 'e03', 'e10', 'e11', 'e12', 'e13', 'e20', 'e21', 'e22', 'e23', 'e30', 'e31', 'e32', 'e33',  'i00', 'i01', 'i02',  'i10', 'i11', 'i12', 'i20', 'i21', 'i22',  'width', 'height',  'px', 'py', 'pz',
+            'image_index', 'panorama_index', 'name', 'camera_index', 'yaw_index', 'e00', 'e01', 'e02', 'e03', 'e10', 'e11', 'e12', 'e13', 'e20', 'e21', 'e22', 'e23', 'e30', 'e31', 'e32', 'e33', 'i00', 'i01', 'i02', 'i10', 'i11', 'i12', 'i20', 'i21', 'i22', 'width', 'height', 'px', 'py', 'pz',
         ])
         self.categories = pd.DataFrame(columns=[
             'category_index', 'category_mapping_index', 'category_mapping_name', 'mpcat40_index', 'mpcat40_name',
         ])
         self.objects = pd.DataFrame(columns=[
-            'object_index', 'region_index', 'category_index', 'px', 'py', 'pz',  'a0x', 'a0y', 'a0z',  'a1x', 'a1y', 'a1z',  'r0', 'r1', 'r2',
+            'object_index', 'region_index', 'category_index', 'px', 'py', 'pz', 'a0x', 'a0y', 'a0z', 'a1x', 'a1y', 'a1z', 'r0', 'r1', 'r2',
         ])
         self.segments = pd.DataFrame(columns=[
             'segment_index', 'object_index', 'id', 'area', 'px', 'py', 'pz', 'xlo', 'ylo', 'zlo', 'xhi', 'yhi', 'zhi',
@@ -101,15 +102,15 @@ class HouseSegmentationFile:
         with open(self.__file_path) as ar:
             lines = ar.readlines()
             n = len(lines)
-            logging.info(f'{self.house_id}: {n} lines to process')
+            print(f'{self.house_id}: {n} lines to process')
             for i, line in enumerate(lines):
                 if i % n // 10 == 0:
-                    logging.info(f'Processing: {i / n:.3f} %')
+                    print(f'Processing: {i / n:.3f} %')
 
                 category, values = get_line_category(line.strip())
 
                 if category is None:
-                    logging.info('Null line:', line)
+                    print('Null line:', line)
                     continue
 
                 if category == 'header':
@@ -242,7 +243,7 @@ class HouseSegmentationFile:
                         for x, y in zip(cols, values)
                     }, ignore_index=True)
                 else:
-                    logging.info('Missing category:', category)
+                    print('Missing category:', category)
 
     def save_mapping(self, path: str = None):
         if path is None:
@@ -253,15 +254,15 @@ class HouseSegmentationFile:
 
     @classmethod
     def load_mapping(cls, house_id: str) -> T:
-        cache_path = f'./metadata_parser/house_cache/{house_id}.pickle'
+        cache_path = f'{cls.base_cache_path}/{house_id}.pickle'
         if os.path.isfile(cache_path):
-            logging.info('Cached file exists, loading.')
+            print('Cached file exists, loading.')
             with open(cache_path, 'rb') as ar:
                 return pickle.load(ar)
-        logging.info('No cache found. Generating from data')
+        print('No cache found. Generating from data')
         metadata = cls(house_id)
         metadata.__parse_file()
-        logging.info('Finished generating. Caching data')
+        print('Finished generating. Caching data')
         metadata.save_mapping(cache_path)
         return metadata
 
@@ -302,7 +303,8 @@ class HouseSegmentationFile:
 
         dist = np.sqrt(x ** 2 + y ** 2)
 
-        heading = np.arctan2(x, y)
+        heading = (np.pi / 2) - np.arctan2(y, x)
+        heading -= (2 * np.pi) * np.floor((heading + np.pi) / (2 * np.pi))
         elevation = np.arctan2(z, dist)
 
         objects['distance'] = dist
@@ -324,6 +326,29 @@ class HouseSegmentationFile:
         """"Returns a pandas dataframe containing the viewpoint's panorama information"""
         return self.panoramas.query(f'name == "{viewpoint_id}"')
 
+    def get_images_with_heading(self, viewpoint_id: str) -> pd.DataFrame:
+        """Returns a pandas dataframe containig a viewpoint's images information.
+        It includes their heading, calculated via the camera's extrinsic matrix
+        TODO: Verify calculations"""
+        panorama = self.get_panorama(viewpoint_id).iloc[0]
+        images = self.images.query(f'panorama_index == "{int(panorama.panorama_index)}"')
+
+        headings = []
+
+        for i in range(len(images)):
+            img = images.iloc[i]
+            ext_matrix = np.zeros((4, 4))
+            for i in range(4):
+                for j in range(4):
+                    ext_matrix[i, j] = img[f'e{i}{j}']
+
+            orientation = np.transpose(ext_matrix[0:3, 0:3]).dot([0, 0, 1])
+            heading = np.arctan2(orientation[1], orientation[0])
+            headings.append(heading)
+
+        images.loc[:, 'heading'] = headings
+        return images
+
 
 if __name__ == '__main__':
 
@@ -338,5 +363,5 @@ if __name__ == '__main__':
     # print(objects.head())
     # print(region.head())
 
-    o = metadata.angle_relative_viewpoint_objects(viewpoint_id)
+    o = metadata.get_images_with_heading(viewpoint_id)
     print(o.head())
