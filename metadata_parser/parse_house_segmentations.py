@@ -313,6 +313,26 @@ class HouseSegmentationFile:
 
         return objects
 
+    def angle_relative_viewpoints(self, curr_viewpoint_id: str, dest_viewpoint_ids: str) -> pd.DataFrame:
+        """"Returns a pandas dataframe containing panororamas
+        asociated with dest_viewpoint_ids,
+        including the relative heading to curr_viewpoint_id"""
+        curr_pano = self.get_panorama(curr_viewpoint_id).iloc[0]
+        dest_panos = self.panoramas.query('name in @dest_viewpoint_ids')
+
+        x = dest_panos['px'] - curr_pano.px
+        y = dest_panos['py'] - curr_pano.py
+
+        dist = np.sqrt(x ** 2 + y ** 2)
+
+        heading = (np.pi / 2) - np.arctan2(y, x)
+        heading -= (2 * np.pi) * np.floor((heading + np.pi) / (2 * np.pi))
+
+        dest_panos['rel_distance'] = dist
+        dest_panos['rel_heading'] = heading
+
+        return dest_panos
+
     def get_region(self, viewpoint_id: str) -> pd.DataFrame:
         """"Returns a pandas dataframe corresponding to the viewpoint's region"""
         region_index = self.get_region_index(viewpoint_id)
@@ -363,5 +383,8 @@ if __name__ == '__main__':
     # print(objects.head())
     # print(region.head())
 
-    o = metadata.get_images_with_heading(viewpoint_id)
+    o = metadata.angle_relative_viewpoints(viewpoint_id, [
+        '0eeeec62f5884cf396e3822ad3a1d5d7',
+        '02a73934caf1435194b39702080d38e8'
+    ])
     print(o.head())
