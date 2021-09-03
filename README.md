@@ -4,7 +4,7 @@ IA LAB PUC Research on VLN task, visualization fo 360° indoor environments on M
 We take the Matterport metadata and make it readily available to enhance tasks built on this dataset, such as the Visual and Language Navigation (VLN) task.
 
 <div style="text-align: center;">
-  <img src="img/objects_visualization.png">
+  <img src="img/objects_visualization.jpg">
   <i>Fig. 1: Objects visualization</i>
 </div>
 
@@ -19,38 +19,48 @@ We take the Matterport metadata and make it readily available to enhance tasks b
 
     ├── LICENSE
     ├── README.md
-    ├── data_explorer.ipynb 👉🏽 Explore the metadata of Matterport simulator, by house and viewpoint nodes.
-    ├── metadata_parser
-    │   ├── house_cache 👉🏽 Folder containing serialized house metadata (with Pickle)
+    ├── docs/
+    ├── img/
+    ├── metadata_parser/
+    │   ├── house_cache/ 👉🏽 Folder containing serialized house metadata (with Pickle)
     │   │   ├── 17DRP5sb8fy.pickle
     │   │   ├── 1LXtFkjw3qL.pickle
     │   │   ├── {...}.pickle
     │   └── parse_house_segmentations.py 👉🏽 Script for generating house metadata pickles
-    ├── objects_visualization.ipynb 👉🏽 Jupyter Notebook to visualize objects coordinates on viewpoint 360° panoramic views
-    ├── requirements.txt 👉🏽 All Python libraries for running the project
-    └── slurm_scripts 👉🏽 Scripts for running repository scripts on Slurm (specifically on IA Lab Cluster)
+    └── slurm_scripts/ 👉🏽 Scripts for running repository scripts on Slurm (specifically on IA Lab Cluster)
         ├── jupyter_on_slurm.sh
         └── python_on_slurm.sh
+    ├── data_explorer.ipynb 👉🏽 Explore the metadata of Matterport simulator, by house and viewpoint nodes.
+    ├── simulator_object_visualization.ipynb 👉🏽 Jupyter Notebook to visualize objects coordinates on viewpoint 360° views, from Simulator
+    ├── requirements.txt 👉🏽 All Python libraries for running the project
 
 ---
 
 ## Installation
 
-We recommend follow `@chihyaoma` [guide](https://github.com/chihyaoma/regretful-agent) for a successfully installation of Matterport simulator
-and all requirements for visualizating.
+If you are member of the IA Lab (PUC), it is already installed on the servers, so the next steps are not necessary unless you would like to run on local.
+
+We recommend follow `@peteanderson80` [R2R paper guide](https://github.com/peteanderson80/Matterport3DSimulator) for a successfully installation of Matterport simulator
+and all requirements for visualizating. Strongly recommended to follow the Docker setup.
+
+As it says, you also will need to download the dataset. For object visualization you will need to follow [this guide](docs/objects_visualization_data.md).
 
 ---
 ## Use on remote host, using SLURM
 
 For local forwarding on remote server use
 
-    ssh -L localhost:8889:scylla:9995 <user>@<host>
+    ssh -L localhost:8889:scylla:{PORT} <user>@<host>
+
+where `PORT` is the port exposed by running the Jupyter Notebook.
 
 If you are connecting to [IA LAB](https://ialab.ing.puc.cl/) Cluster, use:
 
-    sbatch /home/mrearle/repos/360-visualization/scripts/jupyter_on_slurm.sh
+    sbatch /home/mrearle/repos/360-visualization/slurm_scripts/jupyter_on_slurm_gpu.sh
     # or
-    sbatch /home/jiossandon/repos/360-visualization/scripts/jupyter_on_slurm.sh
+    sbatch /home/jiossandon/repos/360-visualization/slurm_scripts/jupyter_on_slurm_gpu.sh
+
+you can see the exposed port by using `cat {PATH}`.
 
 and cancel after not use
 
