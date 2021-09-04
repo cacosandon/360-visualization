@@ -40,12 +40,12 @@ We take the Matterport metadata and make it readily available to enhance tasks b
 
 If you are member of the IA Lab (PUC), it is already installed on the servers, so the next steps are not necessary unless you would like to run on local.
 
-We recommend follow `@peteanderson80` [R2R paper guide](https://github.com/peteanderson80/Matterport3DSimulator) for a successfully installation of Matterport simulator
-and all requirements for visualizating.
+We recommend following `@peteanderson80` [R2R paper guide](https://github.com/peteanderson80/Matterport3DSimulator) for a successfully installation of Matterport simulator
+and all requirements for visualizing.
 
 Some advices:
 - Strongly recommended to follow the Docker setup.
-- When running `cmake`, use `cmake -DEGL_RENDERING=ON ..`, because we will use downloaded images.
+- When running `cmake`, use `cmake -DEGL_RENDERING=ON ..`, because we will use downloaded images. Also, this allows for off-screen rendering in the GPU.
 
 As it says, you also will need to download the dataset. For object visualization you will need to follow [this guide](docs/objects_visualization_data.md).
 

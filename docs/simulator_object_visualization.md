@@ -9,8 +9,10 @@ You are able to select any scan and viewpoint, all scans are provided below. To 
 # Located on metadata_parser/
 from parse_house_segmentations import HouseSegmentationFile
 
-base_cache_path = '/360-visualization/metadata_parser/house_cache'
+base_cache_path = '/360-visualization/metadata_parser/house_cache' # Or the directory where cached files are stored
+base_path = 'Matterport3DSimulator/houses/v1/scans' # Or the folder containing the scans with xxx.house files
 HouseSegmentationFile.base_cache_path = base_cache_path
+HouseSegmentationFile.base_path = base_path
 
 scan = '17DRP5sb8fy'
 
