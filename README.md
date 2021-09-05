@@ -21,6 +21,7 @@ We take the Matterport metadata and make it readily available to enhance tasks b
     ├── README.md
     ├── docs/
     ├── img/
+    ├── connectivity/ 👉🏽 Folder containing connectivity graphs of each scan/house
     ├── metadata_parser/
     │   ├── house_cache/ 👉🏽 Folder containing serialized house metadata (with Pickle)
     │   │   ├── 17DRP5sb8fy.pickle
@@ -31,7 +32,7 @@ We take the Matterport metadata and make it readily available to enhance tasks b
         ├── jupyter_on_slurm.sh
         └── python_on_slurm.sh
     ├── data_explorer.ipynb 👉🏽 Explore the metadata of Matterport simulator, by house and viewpoint nodes.
-    ├── simulator_object_visualization.ipynb 👉🏽 Jupyter Notebook to visualize objects coordinates on viewpoint 360° views, from Simulator
+    ├── simulator_visualization.ipynb 👉🏽 Jupyter Notebook to visualize objects coordinates and reachable viewpoints on 360° views, from Simulator
     ├── requirements.txt 👉🏽 All Python libraries for running the project
 
 ---
