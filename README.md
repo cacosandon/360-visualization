@@ -21,6 +21,7 @@ We take the Matterport metadata and make it readily available to enhance tasks b
     ├── README.md
     ├── docs/
     ├── img/
+    ├── connectivity/ 👉🏽 Folder containing connectivity graphs of each scan/house
     ├── metadata_parser/
     │   ├── house_cache/ 👉🏽 Folder containing serialized house metadata (with Pickle)
     │   │   ├── 17DRP5sb8fy.pickle

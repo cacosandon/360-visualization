@@ -3,8 +3,10 @@ import pandas as pd
 import re
 import os
 import pickle
+import json
 import logging
 import numpy as np
+import networkx as nx
 
 # logging.basicConfig(filename='~/repos/360-visualization/logs/metadata_parser.log', level=logging.DEBUG)
 
@@ -313,25 +315,52 @@ class HouseSegmentationFile:
 
         return objects
 
-    def angle_relative_viewpoints(self, curr_viewpoint_id: str, dest_viewpoint_ids: str) -> pd.DataFrame:
-        """"Returns a pandas dataframe containing panororamas
-        asociated with dest_viewpoint_ids,
-        including the relative heading to curr_viewpoint_id"""
-        curr_pano = self.get_panorama(curr_viewpoint_id).iloc[0]
-        dest_panos = self.panoramas.query('name in @dest_viewpoint_ids')
+    def angle_relative_reachable_viewpoints(self, curr_viewpoint_id: str, graph_path: str) -> pd.DataFrame:
+        """"Returns a pandas dataframe containing reachable panororamas
+        from the curr_viewpoint_id, with heading, elevation and distance
+        """
+        curr_panorama = self.get_panorama(curr_viewpoint_id).iloc[0]
+        graph = self.load_nav_graph(graph_path)
+        df = pd.DataFrame()
 
-        x = dest_panos['px'] - curr_pano.px
-        y = dest_panos['py'] - curr_pano.py
+        for reachable in graph.neighbors(curr_viewpoint_id):
+            node = graph.nodes[reachable]
+            x = node['position'][0] - curr_panorama['px']
+            y = node['position'][1] - curr_panorama['py']
+            z = node['position'][2] - curr_panorama['pz']
+            dist = np.sqrt(x ** 2 + y ** 2)
 
-        dist = np.sqrt(x ** 2 + y ** 2)
+            heading = (np.pi / 2) - np.arctan2(y, x)
+            heading -= (2 * np.pi) * np.floor((heading + np.pi) / (2 * np.pi))
+            elevation = np.arctan2(z - node['height'], dist)
 
-        heading = (np.pi / 2) - np.arctan2(y, x)
-        heading -= (2 * np.pi) * np.floor((heading + np.pi) / (2 * np.pi))
+            df = df.append(
+                {'name': reachable,
+                 'heading': heading,
+                 'elevation': elevation,
+                 'distance': dist
+                }, ignore_index=True
+            )
+        return df
 
-        dest_panos['rel_distance'] = dist
-        dest_panos['rel_heading'] = heading
-
-        return dest_panos
+    def load_nav_graph(self, graph_path):
+        with open(graph_path) as f:
+            G = nx.Graph()
+            positions = {}
+            heights = {}
+            data = json.load(f)
+            for i,item in enumerate(data):
+                if item['included']:
+                    for j,conn in enumerate(item['unobstructed']):
+                        if conn and data[j]['included']:
+                            positions[item['image_id']] = np.array([item['pose'][3],
+                                    item['pose'][7], item['pose'][11]]);
+                            heights[item['image_id']] = float(item['height'])
+                            assert data[j]['unobstructed'][i], 'Graph should be undirected'
+                            G.add_edge(item['image_id'],data[j]['image_id'])
+            nx.set_node_attributes(G, values=positions, name='position')
+            nx.set_node_attributes(G, values=heights, name='height')
+        return G
 
     def get_region(self, viewpoint_id: str) -> pd.DataFrame:
         """"Returns a pandas dataframe corresponding to the viewpoint's region"""
