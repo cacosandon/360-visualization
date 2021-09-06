@@ -50,5 +50,5 @@ All methods are documented within the code. Here's a list of implemented methods
 - `viewpoint_objects(viewpoint_id)`
 - `relative_viewpoint_objects(viewpoint_id)`
 - `angle_relative_viewpoint_objects(viewpoint_id)`
-- `angle_relative_viewpoints(viewpoint_id)`
+- `angle_relative_reachable_viewpoints(viewpoint_id)`
 - `get_images_with_heading(viewpoint_id)`
