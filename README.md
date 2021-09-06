@@ -50,6 +50,8 @@ Some advices:
 
 As it says, you also will need to download the dataset. For object visualization you will need to follow [this guide](docs/objects_visualization_data.md).
 
+For parsing and using house metadata, see the [metadata parser docs](docs/metadata_parser.md).
+
 ---
 ## Run
 
