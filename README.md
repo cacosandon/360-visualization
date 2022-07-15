@@ -4,7 +4,7 @@ IA LAB PUC Research on VLN task, visualization fo 360° indoor environments on M
 We take the Matterport metadata and make it readily available to enhance tasks built on this dataset, such as the Visual and Language Navigation (VLN) task.
 
 <div style="text-align: center;">
-  <img src="img/teaser.jpg">
+  <img src="img/teaser.png">
   <i>Fig. 1: Objects and reachable viewpoints visualization</i>
 </div>
 
