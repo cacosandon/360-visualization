@@ -14,7 +14,7 @@ IMG_WIDTH = 2880
 FORBIDDEN_WORDS = [
   'doorframe', 'light', 'floor', 'ceiling', 'remove', 'otherroom',
   'roof', 'unknown', 'wall', 'door', 'rug', 'frame', 'column', 'window',
-  'column', 'celing', 'door', 'picture', 'delete'
+  'column', 'celing', 'door', 'picture', 'delete', 'object'
 ]
 
 # Loads navigation graph to calculate the relative heading of the next location
