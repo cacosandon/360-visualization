@@ -3,9 +3,16 @@ IA LAB PUC Research on VLN task, visualization fo 360° indoor environments on M
 
 We take the Matterport metadata and make it readily available to enhance tasks built on this dataset, such as the Visual and Language Navigation (VLN) task.
 
+We also create functions for getting new crafted instructions (instructions based on rules with the best objects and viewpoints from the environment recommended for the agent to navigate) and the function for extracting these objects.
+
 <div style="text-align: center;">
   <img src="img/teaser.png">
   <i>Fig. 1: Objects and reachable viewpoints visualization</i>
+</div>
+
+<div style="text-align: center;">
+  <img src="img/crafted_instruction.png">
+  <i>Fig. 2: Crafted instruction generated with retrieved objects and viewpoints</i>
 </div>
 
 
@@ -33,6 +40,9 @@ We take the Matterport metadata and make it readily available to enhance tasks b
         └── python_on_slurm.sh
     ├── data_explorer.ipynb 👉🏽 Explore the metadata of Matterport simulator, by house and viewpoint nodes.
     ├── simulator_visualization.ipynb 👉🏽 Jupyter Notebook to visualize objects coordinates and reachable viewpoints on 360° views, from Simulator
+    ├── crafted_instructions_generator.ipynb 👉🏽 Jupyter Notebook to generate crafted instructions and visualize with panoramas
+    ├── utils.py 👉🏽 Python file with common functions for visualizing and computing graph related stuff
+    ├── objects_and_crafted_instructions_utils.py 👉🏽 Python file with functions for ranking recommended objects and generate crafted instructions
     ├── requirements.txt 👉🏽 All Python libraries for running the project
 
 ---
