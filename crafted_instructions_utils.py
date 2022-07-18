@@ -2,8 +2,10 @@ import random
 import math
 import re
 import numpy as np
+import random
 
 IALAB_USER = 'jiossandon'
+train_vocabulary_path = f"/home/{IALAB_USER}/storage/speaker_follower_with_objects/tasks/R2R/data/train_vocab.txt"
 
 TURN_EXPRESSIONS = [
     lambda orientation: f"turn {orientation}",
@@ -44,11 +46,10 @@ WAIT = [
 ]
 
 # Load vocabulary
-with open(
-  f"/home/{IALAB_USER}/storage/speaker_follower_with_objects/tasks/R2R/data/train_vocab.txt", "r"
-) as file:
+with open(train_vocabulary_path) as file:
     train_vocab = [line.rstrip() for line in file]
 
+# Gets distnace between object and viewpoint
 def get_distance_between(obj, viewpoint_heading, viewpoint_distance):
     angle_between = abs(viewpoint_heading - obj['heading'])
 
@@ -59,6 +60,7 @@ def get_distance_between(obj, viewpoint_heading, viewpoint_distance):
 
     return distance_between
 
+# Get better object for orientating the agent navigate to the next node
 def get_closer_object(objects, viewpoint_heading, viewpoint_distance, used_objects):
     pi = np.pi
     sort_func = lambda obj: get_distance_between(obj, viewpoint_heading, viewpoint_distance)
@@ -66,22 +68,29 @@ def get_closer_object(objects, viewpoint_heading, viewpoint_distance, used_objec
     sorted_objs = sorted(objects, key=sort_func)
 
     for obj in sorted_objs:
+
+        # Filter if object not on the vision cone
         angle_between = viewpoint_heading - obj['heading']
         if not -pi/2 <= angle_between <= pi/2:
             continue
 
+        # Filter if object is over elevation limit (filtering lamps, roofs)
         if abs(obj['elevation']) > 0.6:
             continue
 
+        # Transform objects like bath#sink
         obj_components = re.split('#|/', obj['name'])
         obj_components = [x for x in obj_components if x]
         obj['name'] = ' '.join(obj_components)
 
+        # Filter if object not in vocabulary
         object_in_vocab = all([x in train_vocab for x in obj_components])
 
+        # If is closer than the next node and is not already used in generated crafted instruction
         if obj['distance'] < viewpoint_distance and object_in_vocab and obj['name'] not in used_objects:
             return obj
 
+# Gets closer object for the final atomic crafted instruction (last action)
 def get_final_closer_object(objects):
     sort_func = lambda obj: obj['distance']
 
@@ -103,31 +112,7 @@ def get_final_closer_object(objects):
             obj['orientation'] = get_reference(heading)
             return obj
 
-def get_final_closer_object(objects):
-    sort_func = lambda obj: obj['distance']
-
-    sorted_objs = sorted(objects, key=sort_func)
-    for obj in sorted_objs:
-        obj_components = re.split('#|/', obj['name'])
-        obj_components = [x for x in obj_components if x]
-        obj['name'] = ' '.join(obj_components)
-
-        object_in_vocab = all([x in train_vocab for x in obj_components])
-
-        heading = obj['heading']
-        while heading > np.pi:
-            heading -= 2 * np.pi
-        while heading < -np.pi:
-            heading += 2 * np.pi
-
-        if object_in_vocab and get_reference(heading) != 'behind' and obj['distance'] < 2:
-            obj['orientation'] = get_reference(heading)
-            return obj
-
-
-
-import random
-
+# Get reference of some relative heading
 def get_reference(heading):
     pi = np.pi
     if pi/2 <= heading < (pi - 1/2):
@@ -139,6 +124,7 @@ def get_reference(heading):
     else:
         return 'behind'
 
+# Get hard turn reference if necessary
 def get_hard_turn(heading):
     pi = np.pi
     RANGE_GAP = 0.4
@@ -151,11 +137,13 @@ def get_hard_turn(heading):
 
     return None
 
+# Gets object reference on route
 def get_object_from_viewpoint_orientation(obj, next_viewpoint):
     if obj['heading'] > next_viewpoint['heading']:
         return 'right'
     return 'left'
 
+# Gets same room move instruction
 def get_same_room_instruction(next_viewpoint, hard_turn):
     RANGE_GAP = 0.4
     pi = np.pi
@@ -180,6 +168,7 @@ def opposite_orientation(orientation):
         return 'right'
     return 'left'
 
+# Get final object instruction
 def final_object(object_name, orientation):
     if orientation == "front":
         return random.choice([
