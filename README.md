@@ -5,14 +5,18 @@ We take the Matterport metadata and make it readily available to enhance tasks b
 
 We also create functions for getting new crafted instructions (instructions based on rules with the best objects and viewpoints from the environment recommended for the agent to navigate) and the function for extracting these objects.
 
+<p style="text-align: center;">
+  <i>Fig. 1: Objects and reachable viewpoints visualization</i>
+</p>
 <div style="text-align: center;">
   <img src="img/teaser.png">
-  <i>Fig. 1: Objects and reachable viewpoints visualization</i>
 </div>
 
+<p style="text-align: center;">
+  <i>Fig. 2: Crafted instruction generated with retrieved objects and viewpoints</i>
+</p>
 <div style="text-align: center;">
   <img src="img/crafted_instruction.png">
-  <i>Fig. 2: Crafted instruction generated with retrieved objects and viewpoints</i>
 </div>
 
 
