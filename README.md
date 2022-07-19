@@ -19,7 +19,6 @@ We also create functions for getting new crafted instructions (instructions base
   <img src="img/crafted_instruction.png">
 </div>
 
-
 ### Authors:
 
 - Benjamin Earle (https://www.linkedin.com/in/benjamin-earle/)
@@ -93,3 +92,6 @@ you can see the exposed port by using `cat {PATH}`.
 and cancel after not use
 
     scancel <process ID SLURM> # you can review the ID with `sq`
+    
+## Contributing
+Please contact us if you want to contribute, use objects and crafted instructions to improve a vision-language model or anything else :)
